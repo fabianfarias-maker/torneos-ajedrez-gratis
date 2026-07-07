@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://torneosajedrezgratis.vercel.app/sitemap.xml
