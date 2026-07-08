@@ -547,6 +547,25 @@
       color: var(--text-dark);
     }
 
+    /* Corrección de contraste para dropdowns (select) en temas noche/día */
+    select.form-control {
+      color-scheme: dark;
+    }
+    
+    body.light-mode select.form-control {
+      color-scheme: light;
+    }
+
+    select.form-control option {
+      background-color: #212124 !important;
+      color: #ffffff !important;
+    }
+
+    body.light-mode select.form-control option {
+      background-color: #ffffff !important;
+      color: #111827 !important;
+    }
+
     .tiebreak-selector {
       display: flex;
       flex-direction: column;
@@ -1708,7 +1727,7 @@
                 <select class="form-control" id="t-modality">
                   <option value="suizo" selected>Sistema Suizo</option>
                   <option value="suizo_equipos">Suizo por Equipos</option>
-                  <option value="round-robin">Round Robin (Todos contra Todos)</option>
+                  <option value="round-robin">Round Robin Individual</option>
                   <option value="rr_equipos">Round Robin por Equipos</option>
                 </select>
               </div>
@@ -2064,6 +2083,13 @@
                 <!-- Dinámico -->
               </ol>
             </div>
+
+            <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.5rem; margin-top: 1.5rem;" id="details-performances-section">
+              <h3 style="font-size: 1.1rem; font-family: var(--font-title); margin-bottom: 1rem; color: var(--accent);">Fichas de Participantes y Desempeño:</h3>
+              <div id="details-performances-content">
+                <!-- Dinámico -->
+              </div>
+            </div>
           </div>
         </div>
 
@@ -2300,6 +2326,89 @@
         </p>
         <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
           <button class="btn btn-primary btn-sm" id="rounds-table-close-btn">Entendido</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VENTANA MODAL DE EDICIÓN DE JUGADOR O EQUIPO -->
+    <div id="edit-player-modal" class="modal-overlay">
+      <div class="modal-card" style="max-width: 650px; max-height: 85vh; display: flex; flex-direction: column;">
+        <button class="modal-close-btn" id="edit-player-close-x" title="Cerrar ventana">✕</button>
+        <h2 id="edit-player-modal-title" style="font-family: var(--font-title); font-size: 1.5rem; color: var(--text-contrast); margin-bottom: 0.5rem;">
+          Editar Información
+        </h2>
+        <p id="edit-player-modal-subtitle" style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+          Modifica los datos del participante o del equipo.
+        </p>
+        
+        <form id="edit-player-form" style="display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; padding-right: 0.25rem; flex: 1; margin-bottom: 1.25rem;">
+          <input type="hidden" id="edit-player-id">
+          
+          <!-- Sección para jugador individual -->
+          <div id="edit-individual-fields" style="display: flex; flex-direction: column; gap: 1rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div class="form-group">
+                <label class="form-label" for="edit-p-name">Nombre</label>
+                <input class="form-control" type="text" id="edit-p-name" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="edit-p-lastname">Apellido</label>
+                <input class="form-control" type="text" id="edit-p-lastname" required>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 120px; gap: 0.75rem;">
+              <div class="form-group">
+                <label class="form-label" for="edit-p-club">Club / Ciudad</label>
+                <input class="form-control" type="text" id="edit-p-club">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="edit-p-elo">ELO</label>
+                <input class="form-control" type="number" id="edit-p-elo" required min="0" max="3200">
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección para equipo -->
+          <div id="edit-team-fields" style="display: flex; flex-direction: column; gap: 1rem; display: none;">
+            <div class="form-group">
+              <label class="form-label" for="edit-t-name">Nombre del Equipo</label>
+              <input class="form-control" type="text" id="edit-t-name" required>
+            </div>
+            
+            <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--accent); margin-top: 0.5rem; margin-bottom: 0.25rem; border-bottom: 1px dashed var(--panel-border); padding-bottom: 0.25rem;">
+              Integrantes y Tableros
+            </h4>
+            <div id="edit-team-members-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
+              <!-- Dinámico -->
+            </div>
+          </div>
+        </form>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; border-top: 1px solid var(--panel-border); padding-top: 1rem;">
+          <button class="btn btn-secondary btn-sm" id="edit-player-cancel-btn">Cancelar</button>
+          <button class="btn btn-primary btn-sm" id="edit-player-save-btn">Guardar Cambios</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VENTANA MODAL PARA REORDENAR TABLEROS DE EQUIPOS (ORDEN MANUAL) -->
+    <div id="reorder-team-modal" class="modal-overlay">
+      <div class="modal-card" style="max-width: 500px; max-height: 80vh; display: flex; flex-direction: column;">
+        <button class="modal-close-btn" id="reorder-team-close-x" title="Cerrar ventana">✕</button>
+        <h2 id="reorder-team-title" style="font-family: var(--font-title); font-size: 1.4rem; color: var(--text-contrast); margin-bottom: 0.5rem;">
+          Ordenar Tableros
+        </h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+          Cambia el orden de fuerza (tableros) arrastrando o usando los botones de movimiento.
+        </p>
+
+        <div id="reorder-team-list-container" style="display: flex; flex-direction: column; gap: 0.5rem; overflow-y: auto; flex: 1; margin-bottom: 1.25rem; padding-right: 0.25rem;">
+          <!-- Dinámico -->
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; border-top: 1px solid var(--panel-border); padding-top: 1rem;">
+          <button class="btn btn-secondary btn-sm" id="reorder-team-cancel-btn">Cancelar</button>
+          <button class="btn btn-primary btn-sm" id="reorder-team-save-btn">Guardar Orden</button>
         </div>
       </div>
     </div>
@@ -2876,13 +2985,11 @@
                 let bpA = 0;
                 let bpB = 0;
                 if (p.boardResults && p.boardResults.length > 0) {
-                  p.boardResults.forEach((br, boardIdx) => {
-                    const boardNum = boardIdx + 1;
-                    const teamAIsWhite = boardNum % 2 !== 0;
+                  p.boardResults.forEach(br => {
                     if (br.resultado === '1-0' || br.resultado === '1-0_F') {
-                      if (teamAIsWhite) bpA += 1; else bpB += 1;
+                      bpA += 1;
                     } else if (br.resultado === '0-1' || br.resultado === '0-1_F') {
-                      if (teamAIsWhite) bpB += 1; else bpA += 1;
+                      bpB += 1;
                     } else if (br.resultado === '0.5-0.5') {
                       bpA += 0.5;
                       bpB += 0.5;
@@ -3284,6 +3391,7 @@
         renderizarJugadores();
         renderizarPairings();
         renderizarStandings();
+        renderizarFichasDesempeno();
       } else {
         welcomeView.style.display = 'block';
         createView.style.display = 'none';
@@ -4569,13 +4677,20 @@
         const esSoloLectura = state.torneo.estado !== 'registro';
         
         if (isTeamTorneo) {
+          const isFreeOrder = state.torneo.teamOrder === 'libre';
+          let teamNameHtml = '';
+          if (isFreeOrder) {
+            teamNameHtml = `<div class="team-name-link" style="font-size: 1.05rem; margin-bottom: 0.25rem; cursor: pointer; color: var(--accent); text-decoration: underline; display: inline-block;" data-id="${j.id}" title="Pincha para ver y ordenar jugadores">${j.nombre} ⚙️</div>`;
+          } else {
+            teamNameHtml = `<div style="font-size: 1.05rem; margin-bottom: 0.25rem;">${j.nombre}</div>`;
+          }
           let teamPlayersHtml = j.players.map(p => `<strong>Tab. ${p.board}</strong>: ${p.nombre} ${p.apellido} (${p.elo})`).join(' | ');
           tr.innerHTML = `
             <td>
               <span class="rank-badge">${index + 1}</span>
             </td>
             <td style="font-weight: 600; color: var(--text-contrast);">
-              <div style="font-size: 1.05rem; margin-bottom: 0.25rem;">${j.nombre}</div>
+              ${teamNameHtml}
               <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 400; line-height: 1.4;">${teamPlayersHtml}</div>
             </td>
             <td><span class="player-elo">${j.elo}</span></td>
@@ -4589,6 +4704,9 @@
               </span>
             </td>
             <td>
+              <button class="btn btn-secondary btn-sm btn-edit-player" data-id="${j.id}" ${esSoloLectura ? 'disabled' : ''} style="margin-right: 0.25rem;">
+                Editar
+              </button>
               <button class="btn btn-danger btn-sm btn-delete-player" data-id="${j.id}" ${esSoloLectura ? 'disabled' : ''}>
                 Eliminar
               </button>
@@ -4614,7 +4732,10 @@
               </span>
             </td>
             <td>
-              <button class="btn btn-danger btn-sm btn-delete-player" data-id="${j.id}" ${esSoloLectura ? 'disabled' : ''}>
+              <button class="btn btn-secondary btn-sm btn-edit-player" data-id="${j.id}" style="margin-right: 0.25rem;">
+                Editar
+              </button>
+              <button class="btn btn-danger btn-sm btn-delete-player" data-id="${j.id}">
                 Eliminar
               </button>
             </td>
@@ -4664,6 +4785,21 @@
               showToast(`${jug.isTeam ? 'Equipo' : 'Jugador'} ${jugName} eliminado.`, "info");
             }
           }
+        });
+      });
+
+      // Event listeners para editar y ordenar
+      playersTableBody.querySelectorAll('.btn-edit-player').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const id = e.target.dataset.id;
+          abrirModalEdicion(id);
+        });
+      });
+
+      playersTableBody.querySelectorAll('.team-name-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+          const id = e.currentTarget.dataset.id;
+          abrirModalReordenamientoEquipo(id);
         });
       });
     }
@@ -4986,13 +5122,11 @@
             });
           }
 
-          emp.boardResults.forEach((br, bIdx) => {
-            const boardNum = bIdx + 1;
-            const teamAIsWhite = boardNum % 2 !== 0;
+          emp.boardResults.forEach(br => {
             if (br.resultado === '1-0' || br.resultado === '1-0_F') {
-              if (teamAIsWhite) bpA += 1; else bpB += 1;
+              bpA += 1;
             } else if (br.resultado === '0-1' || br.resultado === '0-1_F') {
-              if (teamAIsWhite) bpB += 1; else bpA += 1;
+              bpB += 1;
             } else if (br.resultado === '0.5-0.5') {
               bpA += 0.5;
               bpB += 0.5;
@@ -5022,13 +5156,23 @@
             const boardNum = bIdx + 1;
             const teamAIsWhite = boardNum % 2 !== 0;
 
-            const selectOptionsA = teamA.players.map(p => {
+            const isEloOrder = state.torneo.teamOrder === 'elo';
+
+            const candidatosA = isEloOrder 
+              ? teamA.players.filter(p => p.board === boardNum || p.board.toString().startsWith('R')) 
+              : teamA.players;
+
+            const selectOptionsA = candidatosA.map(p => {
               const name = `${p.nombre} ${p.apellido}`;
               const isSelected = teamAIsWhite ? (br.whitePlayerId === name) : (br.blackPlayerId === name);
               return `<option value="${name}" ${isSelected ? 'selected' : ''}>${p.nombre} ${p.apellido} (${p.elo})</option>`;
             }).join('');
 
-            const selectOptionsB = teamB.players.map(p => {
+            const candidatosB = isEloOrder 
+              ? teamB.players.filter(p => p.board === boardNum || p.board.toString().startsWith('R')) 
+              : teamB.players;
+
+            const selectOptionsB = candidatosB.map(p => {
               const name = `${p.nombre} ${p.apellido}`;
               const isSelected = teamAIsWhite ? (br.blackPlayerId === name) : (br.whitePlayerId === name);
               return `<option value="${name}" ${isSelected ? 'selected' : ''}>${p.nombre} ${p.apellido} (${p.elo})</option>`;
@@ -5083,6 +5227,29 @@
                 const boardNum = bIdx + 1;
                 const teamAIsWhite = boardNum % 2 !== 0;
                 const value = e.target.value;
+
+                // Validación contra duplicados de jugadores en la misma mesa (mismo equipo)
+                let duplicado = false;
+                emp.boardResults.forEach((otherBr, otherBIdx) => {
+                  if (otherBIdx === bIdx) return;
+                  const otherBoardNum = otherBIdx + 1;
+                  const otherTeamAIsWhite = otherBoardNum % 2 !== 0;
+                  const otherVal = (team === 'A')
+                    ? (otherTeamAIsWhite ? otherBr.whitePlayerId : otherBr.blackPlayerId)
+                    : (otherTeamAIsWhite ? otherBr.blackPlayerId : otherBr.whitePlayerId);
+
+                  if (otherVal === value) {
+                    duplicado = true;
+                  }
+                });
+
+                if (duplicado) {
+                  playSound('error');
+                  alert(`Error de alineación: El jugador "${value}" ya está asignado a otro tablero en esta misma ronda.`);
+                  renderizarPairings(rondaVisualizarNum);
+                  return;
+                }
+
                 if (team === 'A') {
                   if (teamAIsWhite) {
                     emp.boardResults[bIdx].whitePlayerId = value;
@@ -5097,6 +5264,7 @@
                   }
                 }
                 guardarEstadoLocalStorage();
+                renderizarPairings(rondaVisualizarNum);
               });
             });
 
@@ -5114,13 +5282,11 @@
                 let newBpA = 0;
                 let newBpB = 0;
                 let hasPending = false;
-                emp.boardResults.forEach((br, boardIdx) => {
-                  const boardNum = boardIdx + 1;
-                  const teamAIsWhite = boardNum % 2 !== 0;
+                emp.boardResults.forEach(br => {
                   if (br.resultado === '1-0' || br.resultado === '1-0_F') {
-                    if (teamAIsWhite) newBpA += 1; else newBpB += 1;
+                    newBpA += 1;
                   } else if (br.resultado === '0-1' || br.resultado === '0-1_F') {
-                    if (teamAIsWhite) newBpB += 1; else newBpA += 1;
+                    newBpB += 1;
                   } else if (br.resultado === '0.5-0.5') {
                     newBpA += 0.5;
                     newBpB += 0.5;
@@ -5507,6 +5673,301 @@
       });
     }
 
+    function renderizarFichasDesempeno() {
+      const container = document.getElementById('details-performances-content');
+      if (!container) return;
+
+      if (!state.torneo) {
+        container.innerHTML = '<p style="color: var(--text-muted);">No hay torneo activo.</p>';
+        return;
+      }
+
+      const { jugadores, rondas, modalidad } = state.torneo;
+      const isTeamTorneo = modalidad === 'suizo_equipos' || modalidad === 'rr_equipos';
+
+      if (jugadores.length === 0) {
+        container.innerHTML = `<p style="color: var(--text-muted);">Inscribe ${isTeamTorneo ? 'equipos' : 'participantes'} para ver su desempeño.</p>`;
+        return;
+      }
+
+      let html = '';
+
+      if (!isTeamTorneo) {
+        // ================= INDIVIDUAL PERFORMANCE =================
+        const stats = {};
+        jugadores.forEach(j => {
+          stats[j.id] = { w: 0, d: 0, l: 0, elo: j.elo, club: j.club, nombreCompleto: `${j.apellido}, ${j.nombre}`, activo: j.activo };
+        });
+
+        rondas.forEach(ronda => {
+          ronda.emparejamientos.forEach(emp => {
+            const isBye = !emp.blancas || !emp.negras;
+            const res = emp.resultado;
+
+            if (isBye) {
+              const activePlayer = emp.blancas || emp.negras;
+              if (activePlayer && stats[activePlayer.id]) {
+                stats[activePlayer.id].w += 1;
+              }
+            } else if (res) {
+              const bId = emp.blancas.id;
+              const nId = emp.negras.id;
+
+              if (stats[bId] && stats[nId]) {
+                if (res === '1-0' || res === '1-0_F') {
+                  stats[bId].w += 1;
+                  stats[nId].l += 1;
+                } else if (res === '0-1' || res === '0-1_F') {
+                  stats[nId].w += 1;
+                  stats[bId].l += 1;
+                } else if (res === '0.5-0.5') {
+                  stats[bId].d += 1;
+                  stats[nId].d += 1;
+                }
+              }
+            }
+          });
+        });
+
+        const sortedPlayers = Object.values(stats).sort((a, b) => {
+          if (b.w !== a.w) return b.w - a.w;
+          if (b.d !== a.d) return b.d - a.d;
+          if (a.l !== b.l) return a.l - b.l;
+          return b.elo - a.elo;
+        });
+
+        html += `
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem;">
+              <thead>
+                <tr style="border-bottom: 2px solid var(--panel-border); color: var(--text-contrast); font-weight: 700; text-align: left;">
+                  <th style="padding: 0.75rem 0.5rem;">Participante</th>
+                  <th style="padding: 0.75rem 0.5rem;">Club</th>
+                  <th style="padding: 0.75rem 0.5rem; text-align: center; width: 80px;">ELO</th>
+                  <th style="padding: 0.75rem 0.5rem; text-align: center; width: 60px; color: #10B981;">W</th>
+                  <th style="padding: 0.75rem 0.5rem; text-align: center; width: 60px; color: #F59E0B;">D</th>
+                  <th style="padding: 0.75rem 0.5rem; text-align: center; width: 60px; color: #EF4444;">L</th>
+                  <th style="padding: 0.75rem 0.5rem; text-align: center; width: 90px; font-weight: 800;">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+        `;
+
+        sortedPlayers.forEach(p => {
+          const totalPoints = p.w + p.d * 0.5;
+          const statusText = p.activo ? '' : ' <span style="color: var(--danger); font-size: 0.75rem;">(Retirado)</span>';
+          html += `
+            <tr style="border-bottom: 1px solid var(--table-row-border); color: var(--text-main);">
+              <td style="padding: 0.75rem 0.5rem; font-weight: 600; color: var(--text-contrast);">${p.nombreCompleto}${statusText}</td>
+              <td style="padding: 0.75rem 0.5rem; color: var(--text-muted);">${p.club || '-'}</td>
+              <td style="padding: 0.75rem 0.5rem; text-align: center;"><span class="player-elo">${p.elo}</span></td>
+              <td style="padding: 0.75rem 0.5rem; text-align: center; font-weight: 700; color: #10B981;">${p.w}</td>
+              <td style="padding: 0.75rem 0.5rem; text-align: center; font-weight: 700; color: #F59E0B;">${p.d}</td>
+              <td style="padding: 0.75rem 0.5rem; text-align: center; font-weight: 700; color: #EF4444;">${p.l}</td>
+              <td style="padding: 0.75rem 0.5rem; text-align: center; font-weight: bold; color: var(--primary); font-size: 0.95rem;">${totalPoints}</td>
+            </tr>
+          `;
+        });
+
+        html += `
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else {
+        // ================= TEAM PERFORMANCE =================
+        const teamStats = {};
+        jugadores.forEach(eq => {
+          teamStats[eq.id] = {
+            id: eq.id,
+            nombre: eq.nombre,
+            elo: eq.elo,
+            w: 0, d: 0, l: 0,
+            bp: 0,
+            activo: eq.activo,
+            players: {}
+          };
+
+          if (eq.players && eq.players.length > 0) {
+            eq.players.forEach(p => {
+              const pName = `${p.nombre} ${p.apellido}`;
+              teamStats[eq.id].players[pName] = {
+                nombreCompleto: pName,
+                elo: p.elo,
+                board: p.board,
+                w: 0, d: 0, l: 0
+              };
+            });
+          }
+        });
+
+        rondas.forEach(ronda => {
+          ronda.emparejamientos.forEach(emp => {
+            const isBye = !emp.blancas || !emp.negras;
+            const res = emp.resultado;
+
+            if (isBye) {
+              const activeTeam = emp.blancas || emp.negras;
+              if (activeTeam && teamStats[activeTeam.id]) {
+                teamStats[activeTeam.id].w += 1;
+                teamStats[activeTeam.id].bp += (state.torneo.teamBoards || 4) / 2;
+              }
+            } else if (res) {
+              const tAId = emp.blancas.id;
+              const tBId = emp.negras.id;
+
+              if (teamStats[tAId] && teamStats[tBId]) {
+                if (res === '1-0' || res === '1-0_F') {
+                  teamStats[tAId].w += 1;
+                  teamStats[tBId].l += 1;
+                } else if (res === '0-1' || res === '0-1_F') {
+                  teamStats[tBId].w += 1;
+                  teamStats[tAId].l += 1;
+                } else if (res === '0.5-0.5') {
+                  teamStats[tAId].d += 1;
+                  teamStats[tBId].d += 1;
+                }
+
+                if (emp.boardResults && emp.boardResults.length > 0) {
+                  emp.boardResults.forEach(br => {
+                    const brRes = br.resultado;
+                    const wName = br.whitePlayerId;
+                    const bName = br.blackPlayerId;
+
+                    if (teamStats[tAId].players[wName]) {
+                      const pA = teamStats[tAId].players[wName];
+                      const pB = teamStats[tBId].players[bName];
+
+                      if (brRes === '1-0' || brRes === '1-0_F') {
+                        pA.w += 1;
+                        teamStats[tAId].bp += 1;
+                        if (pB) pB.l += 1;
+                      } else if (brRes === '0-1' || brRes === '0-1_F') {
+                        pA.l += 1;
+                        if (pB) {
+                          pB.w += 1;
+                          teamStats[tBId].bp += 1;
+                        }
+                      } else if (brRes === '0.5-0.5') {
+                        pA.d += 1;
+                        teamStats[tAId].bp += 0.5;
+                        if (pB) {
+                          pB.d += 1;
+                          teamStats[tBId].bp += 0.5;
+                        }
+                      }
+                    } else if (teamStats[tAId].players[bName]) {
+                      const pA = teamStats[tAId].players[bName];
+                      const pB = teamStats[tBId].players[wName];
+
+                      if (brRes === '0-1' || brRes === '0-1_F') {
+                        pA.w += 1;
+                        teamStats[tAId].bp += 1;
+                        if (pB) pB.l += 1;
+                      } else if (brRes === '1-0' || brRes === '1-0_F') {
+                        pA.l += 1;
+                        if (pB) {
+                          pB.w += 1;
+                          teamStats[tBId].bp += 1;
+                        }
+                      } else if (brRes === '0.5-0.5') {
+                        pA.d += 1;
+                        teamStats[tAId].bp += 0.5;
+                        if (pB) {
+                          pB.d += 1;
+                          teamStats[tBId].bp += 0.5;
+                        }
+                      }
+                    }
+                  });
+                }
+              }
+            }
+          });
+        });
+
+        const sortedTeams = Object.values(teamStats).sort((a, b) => {
+          const pointsA = a.w * 2 + a.d;
+          const pointsB = b.w * 2 + b.d;
+          if (pointsB !== pointsA) return pointsB - pointsA;
+          if (b.bp !== a.bp) return b.bp - a.bp;
+          return b.elo - a.elo;
+        });
+
+        sortedTeams.forEach(eq => {
+          const matchPoints = eq.w * 2 + eq.d;
+          const statusText = eq.activo ? '' : ' <span style="color: var(--danger); font-size: 0.75rem;">(Retirado)</span>';
+          
+          html += `
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--panel-border); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.5rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--panel-border); padding-bottom: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                  <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--text-contrast); margin: 0;">${eq.nombre}${statusText}</h4>
+                  <span style="font-size: 0.8rem; color: var(--text-muted);">ELO Prom: ${eq.elo}</span>
+                </div>
+                <div style="display: flex; gap: 0.75rem; align-items: center;">
+                  <span style="font-size: 0.82rem; background: rgba(255,255,255,0.05); padding: 0.25rem 0.5rem; border-radius: 4px; color: var(--text-main);">
+                    Match: <b style="color: #10B981;">${eq.w} W</b> / <b style="color: #F59E0B;">${eq.d} D</b> / <b style="color: #EF4444;">${eq.l} L</b>
+                  </span>
+                  <span style="font-size: 0.82rem; background: rgba(201,150,43,0.1); padding: 0.25rem 0.5rem; border-radius: 4px; color: var(--accent); font-weight: 700;">
+                    ${matchPoints} MP | ${eq.bp.toFixed(1)} BP
+                  </span>
+                </div>
+              </div>
+
+              <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem;">
+                  <thead>
+                    <tr style="border-bottom: 1px solid var(--panel-border); color: var(--text-muted); font-weight: 600; text-align: left;">
+                      <th style="padding: 0.5rem 0.25rem; width: 80px; text-align: center;">Tablero</th>
+                      <th style="padding: 0.5rem 0.25rem;">Jugador</th>
+                      <th style="padding: 0.5rem 0.25rem; text-align: center; width: 70px;">ELO</th>
+                      <th style="padding: 0.5rem 0.25rem; text-align: center; width: 50px; color: #10B981;">W</th>
+                      <th style="padding: 0.5rem 0.25rem; text-align: center; width: 50px; color: #F59E0B;">D</th>
+                      <th style="padding: 0.5rem 0.25rem; text-align: center; width: 50px; color: #EF4444;">L</th>
+                      <th style="padding: 0.5rem 0.25rem; text-align: center; width: 70px; font-weight: 700;">Puntos</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+          `;
+
+          const teamPlayers = Object.values(eq.players).sort((a, b) => a.board - b.board);
+
+          if (teamPlayers.length === 0) {
+            html += `
+              <tr>
+                <td colspan="7" style="padding: 1rem; text-align: center; color: var(--text-muted);">Sin jugadores registrados.</td>
+              </tr>
+            `;
+          } else {
+            teamPlayers.forEach(p => {
+              const pPoints = p.w + p.d * 0.5;
+              html += `
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.02); color: var(--text-main);">
+                  <td style="padding: 0.6rem 0.25rem; text-align: center; font-weight: 700; color: var(--text-muted);">Tab. ${p.board}</td>
+                  <td style="padding: 0.6rem 0.25rem; font-weight: 600; color: var(--text-contrast);">${p.nombreCompleto}</td>
+                  <td style="padding: 0.6rem 0.25rem; text-align: center;">${p.elo}</td>
+                  <td style="padding: 0.6rem 0.25rem; text-align: center; font-weight: 700; color: #10B981;">${p.w}</td>
+                  <td style="padding: 0.6rem 0.25rem; text-align: center; font-weight: 700; color: #F59E0B;">${p.d}</td>
+                  <td style="padding: 0.6rem 0.25rem; text-align: center; font-weight: 700; color: #EF4444;">${p.l}</td>
+                  <td style="padding: 0.6rem 0.25rem; text-align: center; font-weight: bold; color: var(--accent);">${pPoints.toFixed(1)}</td>
+                </tr>
+              `;
+            });
+          }
+
+          html += `
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      container.innerHTML = html;
+    }
+
     function renderizarHistorialColoresJugador(jugadorId) {
       let html = `<div class="color-streak-container">`;
       
@@ -5599,11 +6060,155 @@
       const isTeamTorneo = state.torneo.modalidad === 'suizo_equipos' || state.torneo.modalidad === 'rr_equipos';
       const isSuizoEquipos = state.torneo.modalidad === 'suizo_equipos' || state.torneo.modalidad === 'rr_equipos';
       const isBPPrimary = isSuizoEquipos && desempates[0] === 'BP';
+      const { jugadores, rondas } = state.torneo;
 
       if (clasificacion.length === 0) {
         playSound('error');
         showToast("No hay datos para exportar.", "error");
         return;
+      }
+
+      // --- Calcular W/D/L de jugadores/equipos para el XLS ---
+      const perfStats = {};
+      const teamPerfStats = {};
+
+      if (!isTeamTorneo) {
+        jugadores.forEach(j => {
+          perfStats[j.id] = { w: 0, d: 0, l: 0 };
+        });
+
+        rondas.forEach(ronda => {
+          ronda.emparejamientos.forEach(emp => {
+            const isBye = !emp.blancas || !emp.negras;
+            const res = emp.resultado;
+
+            if (isBye) {
+              const activePlayer = emp.blancas || emp.negras;
+              if (activePlayer && perfStats[activePlayer.id]) {
+                perfStats[activePlayer.id].w += 1;
+              }
+            } else if (res) {
+              const bId = emp.blancas.id;
+              const nId = emp.negras.id;
+              if (perfStats[bId] && perfStats[nId]) {
+                if (res === '1-0' || res === '1-0_F') {
+                  perfStats[bId].w += 1;
+                  perfStats[nId].l += 1;
+                } else if (res === '0-1' || res === '0-1_F') {
+                  perfStats[nId].w += 1;
+                  perfStats[bId].l += 1;
+                } else if (res === '0.5-0.5') {
+                  perfStats[bId].d += 1;
+                  perfStats[nId].d += 1;
+                }
+              }
+            }
+          });
+        });
+      } else {
+        jugadores.forEach(eq => {
+          teamPerfStats[eq.id] = {
+            w: 0, d: 0, l: 0,
+            bp: 0,
+            players: {}
+          };
+          if (eq.players && eq.players.length > 0) {
+            eq.players.forEach(p => {
+              const pName = `${p.nombre} ${p.apellido}`;
+              teamPerfStats[eq.id].players[pName] = {
+                nombre: pName,
+                elo: p.elo,
+                board: p.board,
+                w: 0, d: 0, l: 0
+              };
+            });
+          }
+        });
+
+        rondas.forEach(ronda => {
+          ronda.emparejamientos.forEach(emp => {
+            const isBye = !emp.blancas || !emp.negras;
+            const res = emp.resultado;
+
+            if (isBye) {
+              const activeTeam = emp.blancas || emp.negras;
+              if (activeTeam && teamPerfStats[activeTeam.id]) {
+                teamPerfStats[activeTeam.id].w += 1;
+                teamPerfStats[activeTeam.id].bp += (state.torneo.teamBoards || 4) / 2;
+              }
+            } else if (res) {
+              const tAId = emp.blancas.id;
+              const tBId = emp.negras.id;
+
+              if (teamPerfStats[tAId] && teamPerfStats[tBId]) {
+                if (res === '1-0' || res === '1-0_F') {
+                  teamPerfStats[tAId].w += 1;
+                  teamPerfStats[tBId].l += 1;
+                } else if (res === '0-1' || res === '0-1_F') {
+                  teamPerfStats[tBId].w += 1;
+                  teamPerfStats[tAId].l += 1;
+                } else if (res === '0.5-0.5') {
+                  teamPerfStats[tAId].d += 1;
+                  teamPerfStats[tBId].d += 1;
+                }
+
+                if (emp.boardResults && emp.boardResults.length > 0) {
+                  emp.boardResults.forEach(br => {
+                    const brRes = br.resultado;
+                    const wName = br.whitePlayerId;
+                    const bName = br.blackPlayerId;
+
+                    if (teamPerfStats[tAId].players[wName]) {
+                      const pA = teamPerfStats[tAId].players[wName];
+                      const pB = teamPerfStats[tBId].players[bName];
+
+                      if (brRes === '1-0' || brRes === '1-0_F') {
+                        pA.w += 1;
+                        teamPerfStats[tAId].bp += 1;
+                        if (pB) pB.l += 1;
+                      } else if (brRes === '0-1' || brRes === '0-1_F') {
+                        pA.l += 1;
+                        if (pB) {
+                          pB.w += 1;
+                          teamPerfStats[tBId].bp += 1;
+                        }
+                      } else if (brRes === '0.5-0.5') {
+                        pA.d += 1;
+                        teamPerfStats[tAId].bp += 0.5;
+                        if (pB) {
+                          pB.d += 1;
+                          teamPerfStats[tBId].bp += 0.5;
+                        }
+                      }
+                    } else if (teamPerfStats[tAId].players[bName]) {
+                      const pA = teamPerfStats[tAId].players[bName];
+                      const pB = teamPerfStats[tBId].players[wName];
+
+                      if (brRes === '0-1' || brRes === '0-1_F') {
+                        pA.w += 1;
+                        teamPerfStats[tAId].bp += 1;
+                        if (pB) pB.l += 1;
+                      } else if (brRes === '1-0' || brRes === '1-0_F') {
+                        pA.l += 1;
+                        if (pB) {
+                          pB.w += 1;
+                          teamPerfStats[tBId].bp += 1;
+                        }
+                      } else if (brRes === '0.5-0.5') {
+                        pA.d += 1;
+                        teamPerfStats[tAId].bp += 0.5;
+                        if (pB) {
+                          pB.d += 1;
+                          teamPerfStats[tBId].bp += 0.5;
+                        }
+                      }
+                    }
+                  });
+                }
+              }
+            }
+          });
+        });
       }
 
       let xls = `
@@ -5625,6 +6230,7 @@
         <style>
           body { font-family: Arial, sans-serif; }
           h2 { color: #0e0e10; margin-bottom: 5px; }
+          h3 { color: #0e0e10; margin-top: 25px; margin-bottom: 10px; border-bottom: 2px solid #C9962B; padding-bottom: 5px; }
           p { margin: 0 0 15px 0; color: #4b5563; font-size: 0.9rem; }
           table { border-collapse: collapse; margin-top: 10px; }
           th { background-color: #C9962B; color: white; font-weight: bold; border: 1px solid #d1d5db; padding: 8px; text-align: center; }
@@ -5644,6 +6250,7 @@
           <b>Rondas Totales:</b> ${state.torneo.rondasTotales} | <b>Inscripción:</b> ${state.torneo.valor > 0 ? '$' + state.torneo.valor : 'Gratuito'}
         </p>
 
+        <h3>Tabla de Clasificación General</h3>
         <table>
           <thead>
             <tr>
@@ -5670,6 +6277,13 @@
       if (isSuizoEquipos) {
         const extraHeader = isBPPrimary ? 'MP' : 'BP';
         xls += `      <th>${extraHeader}</th>\n`;
+      }
+
+      // Columnas de W/D/L
+      if (!isTeamTorneo) {
+        xls += `      <th>W</th>\n      <th>D</th>\n      <th>L</th>\n`;
+      } else {
+        xls += `      <th>Match W</th>\n      <th>Match D</th>\n      <th>Match L</th>\n`;
       }
 
       desempates.forEach(d => {
@@ -5722,6 +6336,19 @@
           xls += `      <td class="puntos" style="background-color: #fff9e6;">${extraVal}</td>\n`;
         }
 
+        // Celdas W/D/L
+        if (!isTeamTorneo) {
+          const stats = perfStats[p.id] || { w: 0, d: 0, l: 0 };
+          xls += `      <td class="number" style="color: #10B981; font-weight: bold;">${stats.w}</td>\n`;
+          xls += `      <td class="number" style="color: #F59E0B; font-weight: bold;">${stats.d}</td>\n`;
+          xls += `      <td class="number" style="color: #EF4444; font-weight: bold;">${stats.l}</td>\n`;
+        } else {
+          const stats = teamPerfStats[p.id] || { w: 0, d: 0, l: 0 };
+          xls += `      <td class="number" style="color: #10B981; font-weight: bold;">${stats.w}</td>\n`;
+          xls += `      <td class="number" style="color: #F59E0B; font-weight: bold;">${stats.d}</td>\n`;
+          xls += `      <td class="number" style="color: #EF4444; font-weight: bold;">${stats.l}</td>\n`;
+        }
+
         desempates.forEach(d => {
           if (isSuizoEquipos && (d === 'BP' || d === 'MP')) return;
           let val = p[d];
@@ -5734,7 +6361,35 @@
         xls += `      <td class="number">${estado}</td>\n    </tr>\n`;
       });
 
-      xls += `  </tbody>\n</table>\n</body>\n</html>`;
+      if (isTeamTorneo) {
+        xls += `  </tbody>\n</table>\n`;
+        xls += `<br><br>\n<h3>Desempeño Individual de Jugadores por Equipo</h3>\n`;
+        xls += `<table>\n  <thead>\n    <tr style="background-color: #C9962B; color: white;">\n      <th>Equipo</th>\n      <th>Tablero</th>\n      <th>Jugador</th>\n      <th>ELO</th>\n      <th>W</th>\n      <th>D</th>\n      <th>L</th>\n      <th>Puntos</th>\n    </tr>\n  </thead>\n  <tbody>\n`;
+
+        clasificacion.forEach(eq => {
+          const stats = teamPerfStats[eq.id];
+          if (stats && stats.players) {
+            const sortedPlayers = Object.values(stats.players).sort((a, b) => a.board - b.board);
+            sortedPlayers.forEach(p => {
+              const pPoints = p.w + p.d * 0.5;
+              xls += `    <tr>
+                <td>${eq.nombre}</td>
+                <td class="number">Tab. ${p.board}</td>
+                <td style="font-weight: 500;">${p.nombre}</td>
+                <td class="number">${p.elo}</td>
+                <td class="number" style="color: #10B981; font-weight: bold;">${p.w}</td>
+                <td class="number" style="color: #F59E0B; font-weight: bold;">${p.d}</td>
+                <td class="number" style="color: #EF4444; font-weight: bold;">${p.l}</td>
+                <td class="puntos" style="background-color: #f9fafb;">${pPoints.toFixed(1)}</td>
+              </tr>\n`;
+            });
+          }
+        });
+        
+        xls += `  </tbody>\n</table>\n</body>\n</html>`;
+      } else {
+        xls += `  </tbody>\n</table>\n</body>\n</html>`;
+      }
 
       playSound('success');
       const blob = new Blob([xls], { type: 'application/vnd.ms-excel;charset=utf-8;' });
@@ -5742,8 +6397,41 @@
       const link = document.createElement("a");
       const safeTitle = state.torneo.nombre.toLowerCase().replace(/[^a-z0-9]/g, '_');
       
+      // Obtener Modalidad traducida para el nombre de archivo
+      let modText = '';
+      if (state.torneo.modalidad === 'suizo') modText = 'sistema_suizo';
+      else if (state.torneo.modalidad === 'suizo_equipos') modText = 'suizo_por_equipos';
+      else if (state.torneo.modalidad === 'round-robin') modText = 'round_robin_individual';
+      else if (state.torneo.modalidad === 'rr_equipos') modText = 'round_robin_por_equipos';
+
+      // Obtener fecha en formato ddmmaa
+      let fechaStr = state.torneo.fecha || '';
+      let ddmmaa = '';
+      const matchYmd = fechaStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (matchYmd) {
+        ddmmaa = matchYmd[3] + matchYmd[2] + matchYmd[1].substring(2);
+      } else {
+        const matchDmy = fechaStr.match(/^(\d{2})[\/\-](\d{2})[\/\-](\d{4})$/);
+        if (matchDmy) {
+          ddmmaa = matchDmy[1] + matchDmy[2] + matchDmy[3].substring(2);
+        } else {
+          const soloNumeros = fechaStr.replace(/\D/g, '');
+          if (soloNumeros.length === 8 && fechaStr.startsWith(soloNumeros.substring(0, 4))) {
+            ddmmaa = soloNumeros.substring(6, 8) + soloNumeros.substring(4, 6) + soloNumeros.substring(2, 4);
+          } else if (soloNumeros.length >= 6) {
+            ddmmaa = soloNumeros.substring(0, 6);
+          } else {
+            const hoy = new Date();
+            const dd = String(hoy.getDate()).padStart(2, '0');
+            const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+            const aa = String(hoy.getFullYear()).substring(2);
+            ddmmaa = dd + mm + aa;
+          }
+        }
+      }
+
       link.setAttribute("href", url);
-      link.setAttribute("download", `resultados_${safeTitle}_ronda_${state.torneo.rondaActual}.xls`);
+      link.setAttribute("download", `${safeTitle}_${modText}_${ddmmaa}.xls`);
       link.style.visibility = 'hidden';
       
       document.body.appendChild(link);
@@ -6051,13 +6739,11 @@
 
               let bpA = 0, bpB = 0;
               if (emp.boardResults && emp.boardResults.length > 0) {
-                emp.boardResults.forEach((br, boardIdx) => {
-                  const boardNum = boardIdx + 1;
-                  const teamAIsWhite = boardNum % 2 !== 0;
+                emp.boardResults.forEach(br => {
                   if (br.resultado === '1-0' || br.resultado === '1-0_F') {
-                    if (teamAIsWhite) bpA += 1; else bpB += 1;
+                    bpA += 1;
                   } else if (br.resultado === '0-1' || br.resultado === '0-1_F') {
-                    if (teamAIsWhite) bpB += 1; else bpA += 1;
+                    bpB += 1;
                   } else if (br.resultado === '0.5-0.5') {
                     bpA += 0.5;
                     bpB += 0.5;
@@ -6256,13 +6942,11 @@
 
               let bpA = 0, bpB = 0;
               if (emp.boardResults && emp.boardResults.length > 0) {
-                emp.boardResults.forEach((br, boardIdx) => {
-                  const boardNum = boardIdx + 1;
-                  const teamAIsWhite = boardNum % 2 !== 0;
+                emp.boardResults.forEach(br => {
                   if (br.resultado === '1-0' || br.resultado === '1-0_F') {
-                    if (teamAIsWhite) bpA += 1; else bpB += 1;
+                    bpA += 1;
                   } else if (br.resultado === '0-1' || br.resultado === '0-1_F') {
-                    if (teamAIsWhite) bpB += 1; else bpA += 1;
+                    bpB += 1;
                   } else if (br.resultado === '0.5-0.5') {
                     bpA += 0.5;
                     bpB += 0.5;
@@ -6362,6 +7046,329 @@
       
       showToast(`Se ha añadido una ronda extra. El torneo ahora consta de ${state.torneo.rondasTotales} rondas.`, "success");
     }
+
+    // ================= FUNCIONES DE EDICIÓN DE JUGADORES Y EQUIPOS =================
+    
+    // Cierra modal de edición
+    function cerrarModalEdicion() {
+      const modal = document.getElementById('edit-player-modal');
+      if (modal) modal.classList.remove('open');
+    }
+
+    // Abre modal de edición
+    function abrirModalEdicion(id) {
+      if (!state.torneo) return;
+      const jug = state.torneo.jugadores.find(j => j.id === id);
+      if (!jug) return;
+
+      const modal = document.getElementById('edit-player-modal');
+      const inputId = document.getElementById('edit-player-id');
+      const modalTitle = document.getElementById('edit-player-modal-title');
+      
+      inputId.value = id;
+      modalTitle.textContent = jug.isTeam ? `Editar Equipo: ${jug.nombre}` : `Editar Jugador: ${jug.apellido}, ${jug.nombre}`;
+
+      const indFields = document.getElementById('edit-individual-fields');
+      const teamFields = document.getElementById('edit-team-fields');
+
+      if (jug.isTeam) {
+        indFields.style.display = 'none';
+        teamFields.style.display = 'flex';
+
+        // Rellenar campos de equipo
+        document.getElementById('edit-t-name').value = jug.nombre;
+        
+        // Rellenar integrantes
+        const membersContainer = document.getElementById('edit-team-members-container');
+        membersContainer.innerHTML = '';
+
+        jug.players.forEach((p, idx) => {
+          const row = document.createElement('div');
+          row.className = 'edit-member-row';
+          row.style.display = 'grid';
+          row.style.gridTemplateColumns = '80px 1fr 1fr 90px';
+          row.style.gap = '0.5rem';
+          row.style.alignItems = 'center';
+          row.style.background = 'rgba(255,255,255,0.01)';
+          row.style.border = '1px solid rgba(255,255,255,0.03)';
+          row.style.padding = '0.5rem';
+          row.style.borderRadius = '4px';
+
+          row.innerHTML = `
+            <span style="font-weight: 600; font-size: 0.78rem; color: var(--text-muted); text-align: center;">Tab. ${p.board}</span>
+            <div>
+              <input class="form-control form-control-sm edit-tp-name" type="text" placeholder="Nombre" value="${p.nombre}" required data-board="${p.board}">
+            </div>
+            <div>
+              <input class="form-control form-control-sm edit-tp-lastname" type="text" placeholder="Apellido" value="${p.apellido}" required data-board="${p.board}">
+            </div>
+            <div>
+              <input class="form-control form-control-sm edit-tp-elo" type="number" placeholder="ELO" value="${p.elo}" required min="0" max="3200" data-board="${p.board}">
+            </div>
+          `;
+          membersContainer.appendChild(row);
+        });
+      } else {
+        indFields.style.display = 'flex';
+        teamFields.style.display = 'none';
+
+        // Rellenar campos individuales
+        document.getElementById('edit-p-name').value = jug.nombre;
+        document.getElementById('edit-p-lastname').value = jug.apellido;
+        document.getElementById('edit-p-club').value = jug.club || '';
+        document.getElementById('edit-p-elo').value = jug.elo;
+      }
+
+      modal.classList.add('open');
+      playSound('select');
+    }
+
+    // Guarda los cambios del modal de edición
+    function guardarEdicionJugadorEquipo() {
+      if (!state.torneo) return;
+      const id = document.getElementById('edit-player-id').value;
+      const jug = state.torneo.jugadores.find(j => j.id === id);
+      if (!jug) return;
+
+      if (jug.isTeam) {
+        const teamName = document.getElementById('edit-t-name').value.trim();
+        if (!teamName) {
+          showToast("El nombre del equipo es requerido.", "error");
+          return;
+        }
+
+        // Validar duplicados de nombre de equipo (excepto él mismo)
+        const existe = state.torneo.jugadores.some(t => t.id !== id && t.nombre.toLowerCase() === teamName.toLowerCase());
+        if (existe) {
+          showToast(`El equipo ${teamName} ya está registrado.`, "error");
+          return;
+        }
+
+        const membersContainer = document.getElementById('edit-team-members-container');
+        const names = membersContainer.querySelectorAll('.edit-tp-name');
+        const lastnames = membersContainer.querySelectorAll('.edit-tp-lastname');
+        const elos = membersContainer.querySelectorAll('.edit-tp-elo');
+
+        const updatedPlayers = [];
+        let totalElo = 0;
+        let titularCount = 0;
+
+        names.forEach((nameInput, idx) => {
+          const board = nameInput.dataset.board;
+          const name = nameInput.value.trim();
+          const lastname = lastnames[idx].value.trim();
+          const elo = parseInt(elos[idx].value) || 1500;
+
+          updatedPlayers.push({
+            board,
+            nombre: name || "Reserva",
+            apellido: lastname,
+            elo
+          });
+
+          if (!board.toString().startsWith('R')) {
+            totalElo += elo;
+            titularCount++;
+          }
+        });
+
+        // Si el orden es automático por ELO
+        if (state.torneo.teamOrder === 'elo') {
+          const titulares = updatedPlayers.filter(p => !p.board.toString().startsWith('R'));
+          const suplentes = updatedPlayers.filter(p => p.board.toString().startsWith('R'));
+
+          titulares.sort((a, b) => b.elo - a.elo);
+          titulares.forEach((p, idx) => {
+            p.board = idx + 1;
+          });
+
+          updatedPlayers.length = 0;
+          updatedPlayers.push(...titulares, ...suplentes);
+        }
+
+        const averageElo = titularCount > 0 ? Math.round(totalElo / titularCount) : 1500;
+
+        // Guardar cambios
+        jug.nombre = teamName;
+        jug.elo = averageElo;
+        jug.players = updatedPlayers;
+      } else {
+        const name = document.getElementById('edit-p-name').value.trim();
+        const lastname = document.getElementById('edit-p-lastname').value.trim();
+        const club = document.getElementById('edit-p-club').value.trim();
+        const elo = parseInt(document.getElementById('edit-p-elo').value) || 1500;
+
+        if (!name || !lastname) {
+          showToast("El nombre y apellido son requeridos.", "error");
+          return;
+        }
+
+        // Guardar cambios
+        jug.nombre = name;
+        jug.apellido = lastname;
+        jug.club = club;
+        jug.elo = elo;
+      }
+
+      guardarEstadoLocalStorage();
+      cerrarModalEdicion();
+      renderizarJugadores();
+      renderizarStandings();
+      if (state.torneo.estado === 'en_progreso') {
+        renderizarPairings();
+      }
+      playSound('success');
+      showToast("Información actualizada con éxito.", "success");
+    }
+
+    // ================= FUNCIONES DE REORDENAMIENTO DE TABLEROS =================
+    let tempTeamPlayers = [];
+    let tempTeamId = null;
+
+    // Cierra modal de reordenamiento
+    function cerrarModalReordenamiento() {
+      const modal = document.getElementById('reorder-team-modal');
+      if (modal) modal.classList.remove('open');
+    }
+
+    // Abre modal de reordenamiento
+    function abrirModalReordenamientoEquipo(equipoId) {
+      if (!state.torneo) return;
+      const eq = state.torneo.jugadores.find(j => j.id === equipoId);
+      if (!eq || !eq.isTeam) return;
+
+      tempTeamId = equipoId;
+      tempTeamPlayers = eq.players.map(p => ({ ...p }));
+
+      const modal = document.getElementById('reorder-team-modal');
+      const title = document.getElementById('reorder-team-title');
+      title.textContent = `Ordenar Tableros: ${eq.nombre}`;
+
+      renderizarListaReordenar();
+      modal.classList.add('open');
+      playSound('select');
+    }
+
+    // Renderiza la lista dentro del modal de reordenamiento
+    function renderizarListaReordenar() {
+      const container = document.getElementById('reorder-team-list-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      tempTeamPlayers.forEach((p, idx) => {
+        const item = document.createElement('div');
+        item.style.display = 'flex';
+        item.style.justifyContent = 'space-between';
+        item.style.alignItems = 'center';
+        item.style.background = 'rgba(255,255,255,0.02)';
+        item.style.border = '1px solid rgba(255,255,255,0.05)';
+        item.style.padding = '0.6rem 0.8rem';
+        item.style.borderRadius = 'var(--radius-sm)';
+        item.style.gap = '0.5rem';
+
+        const info = document.createElement('div');
+        info.style.display = 'flex';
+        info.style.flexDirection = 'column';
+        
+        let boardLabel = p.board.toString().startsWith('R') ? `Suplente (${p.board})` : `Tablero ${p.board}`;
+        info.innerHTML = `
+          <span style="font-weight: 700; color: var(--accent); font-size: 0.8rem;">${boardLabel}</span>
+          <span style="font-weight: 600; color: var(--text-contrast); font-size: 0.95rem;">${p.nombre} ${p.apellido}</span>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">ELO: ${p.elo}</span>
+        `;
+
+        const btns = document.createElement('div');
+        btns.style.display = 'flex';
+        btns.style.gap = '0.25rem';
+        btns.innerHTML = `
+          <button type="button" class="btn btn-secondary btn-sm" onclick="moverJugadorReordenar(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} style="padding: 0.15rem 0.45rem; font-size: 0.8rem;">↑</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="moverJugadorReordenar(${idx}, 1)" ${idx === tempTeamPlayers.length - 1 ? 'disabled' : ''} style="padding: 0.15rem 0.45rem; font-size: 0.8rem;">↓</button>
+        `;
+
+        item.appendChild(info);
+        item.appendChild(btns);
+        container.appendChild(item);
+      });
+    }
+
+    // Mueve a un jugador en la lista temporal de reordenamiento
+    window.moverJugadorReordenar = function(idx, dir) {
+      if (idx + dir < 0 || idx + dir >= tempTeamPlayers.length) return;
+      const temp = tempTeamPlayers[idx];
+      tempTeamPlayers[idx] = tempTeamPlayers[idx + dir];
+      tempTeamPlayers[idx + dir] = temp;
+      
+      // Reasignar los números de tablero
+      const titulares = tempTeamPlayers.filter(p => !p.board.toString().startsWith('R'));
+      const suplentes = tempTeamPlayers.filter(p => p.board.toString().startsWith('R'));
+
+      titulares.forEach((p, i) => {
+        p.board = i + 1;
+      });
+      suplentes.forEach((p, i) => {
+        p.board = `R${i + 1}`;
+      });
+
+      tempTeamPlayers = [...titulares, ...suplentes];
+
+      playSound('select');
+      renderizarListaReordenar();
+    };
+
+    // Guarda el nuevo orden de los tableros del equipo
+    function guardarOrdenTablerosEquipo() {
+      if (!state.torneo || !tempTeamId) return;
+      const eq = state.torneo.jugadores.find(j => j.id === tempTeamId);
+      if (!eq) return;
+
+      eq.players = tempTeamPlayers.map(p => ({ ...p }));
+      
+      let totalElo = 0;
+      let titularCount = 0;
+      eq.players.forEach(p => {
+        if (!p.board.toString().startsWith('R')) {
+          totalElo += p.elo;
+          titularCount++;
+        }
+      });
+      eq.elo = titularCount > 0 ? Math.round(totalElo / titularCount) : 1500;
+
+      guardarEstadoLocalStorage();
+      cerrarModalReordenamiento();
+      renderizarJugadores();
+      renderizarStandings();
+      if (state.torneo.estado === 'en_progreso') {
+        renderizarPairings();
+      }
+      playSound('success');
+      showToast("Orden de tableros guardado con éxito.", "success");
+    }
+
+    // Inicializar listeners de cierre y clicks de modales
+    document.addEventListener('DOMContentLoaded', () => {
+      // Edit Player Modal Listeners
+      const closeX = document.getElementById('edit-player-close-x');
+      const cancelBtn = document.getElementById('edit-player-cancel-btn');
+      const saveBtn = document.getElementById('edit-player-save-btn');
+
+      if (closeX) closeX.addEventListener('click', cerrarModalEdicion);
+      if (cancelBtn) cancelBtn.addEventListener('click', cerrarModalEdicion);
+      if (saveBtn) {
+        saveBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          guardarEdicionJugadorEquipo();
+        });
+      }
+
+      // Reorder Team Modal Listeners
+      const reorderCloseX = document.getElementById('reorder-team-close-x');
+      const reorderCancelBtn = document.getElementById('reorder-team-cancel-btn');
+      const reorderSaveBtn = document.getElementById('reorder-team-save-btn');
+
+      if (reorderCloseX) reorderCloseX.addEventListener('click', cerrarModalReordenamiento);
+      if (reorderCancelBtn) reorderCancelBtn.addEventListener('click', cerrarModalReordenamiento);
+      if (reorderSaveBtn) reorderSaveBtn.addEventListener('click', guardarOrdenTablerosEquipo);
+    });
   </script>
 
 </body>
