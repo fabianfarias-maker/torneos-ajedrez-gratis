@@ -3155,6 +3155,17 @@
       renderizarVistas();
     });
 
+    function obtenerEmparejamientosOrdenados(emparejamientos) {
+      if (!emparejamientos) return [];
+      return [...emparejamientos].sort((a, b) => {
+        const aIsBye = !a.blancas || !a.negras;
+        const bIsBye = !b.blancas || !b.negras;
+        if (aIsBye && !bIsBye) return 1;
+        if (!aIsBye && bIsBye) return -1;
+        return 0;
+      });
+    }
+
     function guardarEstadoLocalStorage() {
       if (state.torneo) {
         localStorage.setItem('torneo_ajedrez_chile_torneo', JSON.stringify(state.torneo));
@@ -4756,12 +4767,16 @@
               const blancas = (r % 2 !== 0) ? playerX : playerP;
               const negras = (r % 2 !== 0) ? playerP : playerX;
               const esBye = (blancas === null || negras === null);
+              let resBye = null;
+              if (esBye) {
+                resBye = (blancas === null) ? '0-1' : '1-0';
+              }
 
               emparejamientosIda.push({
                 id: `${isDouble ? (2 * r - 1) : r}-${pairingIndexIda++}`,
                 blancas: blancas,
                 negras: negras,
-                resultado: esBye ? '1-0' : null,
+                resultado: resBye,
                 boardResults: []
               });
             }
@@ -4800,12 +4815,16 @@
             const blancas = empIda.negras;
             const negras = empIda.blancas;
             const esBye = (blancas === null || negras === null);
+            let resBye = null;
+            if (esBye) {
+              resBye = (blancas === null) ? '0-1' : '1-0';
+            }
 
             emparejamientosVuelta.push({
               id: `${2 * r}-${pairingIndexVuelta++}`,
               blancas: blancas,
               negras: negras,
-              resultado: esBye ? '1-0' : null,
+              resultado: resBye,
               boardResults: []
             });
           });
@@ -4916,7 +4935,7 @@
       }
 
       container.innerHTML = '';
-      ronda.emparejamientos.forEach((emp, index) => {
+      obtenerEmparejamientosOrdenados(ronda.emparejamientos).forEach((emp, index) => {
         const div = document.createElement('div');
         div.className = 'pairing-card';
 
@@ -5502,7 +5521,11 @@
               html += `<span class="color-streak-dot w" title="Ronda ${ronda.numero}: Blancas contra ${emp.negras.apellido}"></span>`;
             }
           } else {
-            html += `<span class="color-streak-dot b" title="Ronda ${ronda.numero}: Negras contra ${emp.blancas.apellido}"></span>`;
+            if (!emp.blancas) {
+              html += `<span class="color-streak-dot bye" title="Ronda ${ronda.numero}: Bye (+1.0)"></span>`;
+            } else {
+              html += `<span class="color-streak-dot b" title="Ronda ${ronda.numero}: Negras contra ${emp.blancas.apellido}"></span>`;
+            }
           }
         }
       });
@@ -5776,7 +5799,7 @@
 
       if (isTeamTorneo) {
         // Impresión para torneos por equipos
-        ronda.emparejamientos.forEach((emp, index) => {
+        obtenerEmparejamientosOrdenados(ronda.emparejamientos).forEach((emp, index) => {
           const isBye = !emp.blancas || !emp.negras;
           const teamA = emp.blancas;
           const teamB = emp.negras;
@@ -5874,7 +5897,7 @@
             <tbody>
         `;
 
-        ronda.emparejamientos.forEach((emp, index) => {
+        obtenerEmparejamientosOrdenados(ronda.emparejamientos).forEach((emp, index) => {
           const bName = emp.blancas ? `${emp.blancas.apellido}, ${emp.blancas.nombre}` : "BYE";
           const nName = emp.negras ? `${emp.negras.apellido}, ${emp.negras.nombre}` : "BYE";
           const bElo = emp.blancas ? emp.blancas.elo : "-";
@@ -5968,7 +5991,7 @@
               <tbody>
           `;
 
-          ronda.emparejamientos.forEach((emp, index) => {
+          obtenerEmparejamientosOrdenados(ronda.emparejamientos).forEach((emp, index) => {
             let bName = "BYE";
             let nName = "BYE";
             if (emp.blancas) {
@@ -5999,7 +6022,7 @@
           `;
         } else {
           // Modalidad por equipos: una tabla detallada por cada mesa/encuentro
-          ronda.emparejamientos.forEach((emp, index) => {
+          obtenerEmparejamientosOrdenados(ronda.emparejamientos).forEach((emp, index) => {
             const isBye = !emp.blancas || !emp.negras;
             const teamA = emp.blancas;
             const teamB = emp.negras;
@@ -6173,7 +6196,7 @@
               <tbody>
           `;
 
-          ronda.emparejamientos.forEach((emp, index) => {
+          obtenerEmparejamientosOrdenados(ronda.emparejamientos).forEach((emp, index) => {
             let bName = "BYE";
             let nName = "BYE";
             if (emp.blancas) {
@@ -6204,7 +6227,7 @@
           `;
         } else {
           // Modalidad por equipos: tablas individuales por mesa (impresión limpia)
-          ronda.emparejamientos.forEach((emp, index) => {
+          obtenerEmparejamientosOrdenados(ronda.emparejamientos).forEach((emp, index) => {
             const isBye = !emp.blancas || !emp.negras;
             const teamA = emp.blancas;
             const teamB = emp.negras;
