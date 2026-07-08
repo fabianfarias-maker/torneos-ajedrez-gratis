@@ -2640,8 +2640,12 @@
           };
         });
 
+        const H = Math.floor(list.length / 2);
         candidatos.sort((a, b) => {
           if (a.scoreDiff !== b.scoreDiff) return a.scoreDiff - b.scoreDiff;
+          const distA = Math.abs((a.index + 1) - H);
+          const distB = Math.abs((b.index + 1) - H);
+          if (distA !== distB) return distA - distB;
           return b.player.elo - a.player.elo;
         });
 
@@ -2795,8 +2799,12 @@
           };
         });
 
+        const H = Math.floor(list.length / 2);
         candidatos.sort((a, b) => {
           if (a.scoreDiff !== b.scoreDiff) return a.scoreDiff - b.scoreDiff;
+          const distA = Math.abs((a.index + 1) - H);
+          const distB = Math.abs((b.index + 1) - H);
+          if (distA !== distB) return distA - distB;
           return b.player.elo - a.player.elo;
         });
 
