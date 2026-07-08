@@ -1582,6 +1582,18 @@
         padding: 2rem 1rem;
       }
     }
+
+    /* Estilos para el botón del sorteo de color */
+    #btn-sorteo-blancas:hover {
+      border-color: var(--accent) !important;
+      background: rgba(255, 255, 255, 0.08) !important;
+      transform: translateY(-3px);
+    }
+    #btn-sorteo-negras:hover {
+      border-color: var(--accent) !important;
+      background: rgba(0, 0, 0, 0.5) !important;
+      transform: translateY(-3px);
+    }
   </style>
 </head>
 <body>
@@ -2413,6 +2425,31 @@
       </div>
     </div>
 
+    <!-- VENTANA MODAL PARA SORTEO DE COLOR INICIAL (SISTEMA SUIZO FIDE) -->
+    <div id="sorteo-color-modal" class="modal-overlay">
+      <div class="modal-card" style="max-width: 420px; text-align: center; padding: 2rem;">
+        <h3 style="color: var(--accent); margin-bottom: 0.5rem; font-family: var(--font-display); letter-spacing: 1px; font-size: 1.4rem;">
+          SORTEO DE COLOR INICIAL
+        </h3>
+        <p id="sorteo-color-desc" style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.5rem; line-height: 1.4;">
+          Selecciona el color resultante del sorteo oficial para el jugador/equipo sembrado No. 1 en la primera mesa.
+        </p>
+        
+        <div style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 1.5rem;">
+          <button class="btn" id="btn-sorteo-blancas" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); border-radius: var(--radius-lg); cursor: pointer; transition: var(--transition);">
+            <span style="font-size: 2.5rem; margin-bottom: 0.5rem;">⚪</span>
+            <span style="font-weight: bold; font-size: 1rem; color: #ffffff;">BLANCAS</span>
+          </button>
+          <button class="btn" id="btn-sorteo-negras" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; background: rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.1); border-radius: var(--radius-lg); cursor: pointer; transition: var(--transition);">
+            <span style="font-size: 2.5rem; margin-bottom: 0.5rem;">⚫</span>
+            <span style="font-weight: bold; font-size: 1rem; color: #ffffff;">NEGRAS</span>
+          </button>
+        </div>
+        
+        <button class="btn btn-secondary btn-sm" id="btn-sorteo-cancelar" style="width: 100%;">Cancelar</button>
+      </div>
+    </div>
+
 
 
     <!-- TOAST DE NOTIFICACIONES -->
@@ -2701,6 +2738,29 @@
         };
       });
 
+      // Si es la ronda 1, aplicar la alternancia de colores según el sorteo
+      if (rondaActual === 0) {
+        const colorSorteo = torneo.colorNo1Ronda1 || 'W';
+        nuevosEmparejamientos.forEach((emp, index) => {
+          const mesaNum = index + 1;
+          const p1Orig = emp.blancas;
+          const p2Orig = emp.negras;
+          
+          const superior = (p1Orig.elo >= p2Orig.elo) ? p1Orig : p2Orig;
+          const inferior = (p1Orig.elo >= p2Orig.elo) ? p2Orig : p1Orig;
+          
+          let superiorEsBlancas = false;
+          if (colorSorteo === 'W') {
+            superiorEsBlancas = (mesaNum % 2 !== 0);
+          } else {
+            superiorEsBlancas = (mesaNum % 2 === 0);
+          }
+          
+          emp.blancas = superiorEsBlancas ? superior : inferior;
+          emp.negras = superiorEsBlancas ? inferior : superior;
+        });
+      }
+
       if (byeJugador) {
         nuevosEmparejamientos.push({
           id: `${rondaActual + 1}-bye`,
@@ -2854,6 +2914,29 @@
           boardResults: []
         };
       });
+
+      // Si es la ronda 1, aplicar la alternancia de colores según el sorteo
+      if (rondaActual === 0) {
+        const colorSorteo = torneo.colorNo1Ronda1 || 'W';
+        nuevosEmparejamientos.forEach((emp, index) => {
+          const mesaNum = index + 1;
+          const t1Orig = emp.blancas;
+          const t2Orig = emp.negras;
+          
+          const superior = (t1Orig.elo >= t2Orig.elo) ? t1Orig : t2Orig;
+          const inferior = (t1Orig.elo >= t2Orig.elo) ? t2Orig : t1Orig;
+          
+          let superiorEsBlancas = false;
+          if (colorSorteo === 'W') {
+            superiorEsBlancas = (mesaNum % 2 !== 0);
+          } else {
+            superiorEsBlancas = (mesaNum % 2 === 0);
+          }
+          
+          emp.blancas = superiorEsBlancas ? superior : inferior;
+          emp.negras = superiorEsBlancas ? inferior : superior;
+        });
+      }
 
       if (byeEquipo) {
         nuevosEmparejamientos.push({
@@ -4822,7 +4905,9 @@
         return;
       }
 
-      if (state.torneo.modalidad === 'round-robin' || state.torneo.modalidad === 'rr_equipos') {
+      const isRoundRobin = state.torneo.modalidad === 'round-robin' || state.torneo.modalidad === 'rr_equipos';
+
+      if (isRoundRobin) {
         let numRondas = (n % 2 === 0) ? (n - 1) : n;
         if (state.torneo.rrTipo === 'double') {
           numRondas *= 2;
@@ -4852,6 +4937,14 @@
         }
       }
 
+      if (!isRoundRobin) {
+        abrirModalSorteoColor();
+      } else {
+        ejecutarInicioTorneoDirecto();
+      }
+    }
+
+    function ejecutarInicioTorneoDirecto() {
       try {
         state.torneo.estado = 'en_progreso';
         state.torneo.rondaActual = 0; 
@@ -7352,6 +7445,22 @@
       showToast("Orden de tableros guardado con éxito.", "success");
     }
 
+    // --- MÉTODOS CONTROLADORES DE MODAL SORTEO COLOR ---
+    function abrirModalSorteoColor() {
+      const modal = document.getElementById('sorteo-color-modal');
+      if (modal) {
+        modal.classList.add('open');
+        playSound('select');
+      }
+    }
+
+    function cerrarModalSorteoColor() {
+      const modal = document.getElementById('sorteo-color-modal');
+      if (modal) {
+        modal.classList.remove('open');
+      }
+    }
+
     // Inicializar listeners de cierre y clicks de modales
     document.addEventListener('DOMContentLoaded', () => {
       // Edit Player Modal Listeners
@@ -7376,6 +7485,31 @@
       if (reorderCloseX) reorderCloseX.addEventListener('click', cerrarModalReordenamiento);
       if (reorderCancelBtn) reorderCancelBtn.addEventListener('click', cerrarModalReordenamiento);
       if (reorderSaveBtn) reorderSaveBtn.addEventListener('click', guardarOrdenTablerosEquipo);
+
+      // Sorteo Color Modal Listeners
+      const btnSorteoBlancas = document.getElementById('btn-sorteo-blancas');
+      const btnSorteoNegras = document.getElementById('btn-sorteo-negras');
+      const btnSorteoCancelar = document.getElementById('btn-sorteo-cancelar');
+
+      if (btnSorteoBlancas) {
+        btnSorteoBlancas.addEventListener('click', () => {
+          cerrarModalSorteoColor();
+          completarInicioTorneoSuizo('W');
+        });
+      }
+      if (btnSorteoNegras) {
+        btnSorteoNegras.addEventListener('click', () => {
+          cerrarModalSorteoColor();
+          completarInicioTorneoSuizo('B');
+        });
+      }
+      if (btnSorteoCancelar) {
+        btnSorteoCancelar.addEventListener('click', () => {
+          cerrarModalSorteoColor();
+          state.torneo.estado = 'registro';
+          guardarEstadoLocalStorage();
+        });
+      }
     });
   </script>
 
