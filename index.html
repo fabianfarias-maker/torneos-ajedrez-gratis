@@ -2427,12 +2427,23 @@
 
     <!-- VENTANA MODAL PARA SORTEO DE COLOR INICIAL (SISTEMA SUIZO FIDE) -->
     <div id="sorteo-color-modal" class="modal-overlay">
-      <div class="modal-card" style="max-width: 420px; text-align: center; padding: 2rem;">
+      <div class="modal-card" style="max-width: 450px; text-align: center; padding: 2rem;">
         <h3 style="color: var(--accent); margin-bottom: 0.5rem; font-family: var(--font-display); letter-spacing: 1px; font-size: 1.4rem;">
           SORTEO DE COLOR INICIAL
         </h3>
+        
+        <!-- Contenedor del pareo Mesa 1 -->
+        <div id="sorteo-color-pairing-info" style="background: rgba(255,255,255,0.02); border: 1px solid var(--panel-border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; margin-bottom: 1.25rem;">
+          <div style="font-size: 0.72rem; color: var(--accent); font-weight: 700; margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.5px;">Mesa 1 - Emparejamiento Preliminar</div>
+          <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-weight: bold; color: var(--text-contrast); font-size: 0.95rem;">
+            <span id="sorteo-player-1" style="flex: 1; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">-</span>
+            <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: normal; flex-shrink: 0;">VS</span>
+            <span id="sorteo-player-2" style="flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">-</span>
+          </div>
+        </div>
+
         <p id="sorteo-color-desc" style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.5rem; line-height: 1.4;">
-          Selecciona el color resultante del sorteo oficial para el jugador/equipo sembrado No. 1 en la primera mesa.
+          Selecciona el color del sorteo para el jugador 1.
         </p>
         
         <div style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 1.5rem;">
@@ -4938,7 +4949,19 @@
       }
 
       if (!isRoundRobin) {
-        abrirModalSorteoColor();
+        const jugadoresActivos = state.torneo.jugadores.filter(j => j.activo);
+        let listaEmparejar = [...jugadoresActivos];
+        if (listaEmparejar.length % 2 !== 0) {
+          listaEmparejar.sort((a, b) => a.elo - b.elo);
+          listaEmparejar = listaEmparejar.filter(j => j.id !== listaEmparejar[0].id);
+        }
+        listaEmparejar.sort((a, b) => b.elo - a.elo);
+        const H = Math.floor(listaEmparejar.length / 2);
+        
+        const p1 = listaEmparejar[0];
+        const p2 = listaEmparejar[H];
+        
+        abrirModalSorteoColor(p1, p2);
       } else {
         ejecutarInicioTorneoDirecto();
       }
@@ -4957,6 +4980,30 @@
         
         irAPestana('tab-pairings');
         showToast("¡Torneo iniciado! Ronda 1 emparejada.", "success");
+      } catch (e) {
+        playSound('error');
+        showToast(e.message, "error");
+        state.torneo.estado = 'registro';
+        guardarEstadoLocalStorage();
+      }
+    }
+
+    function completarInicioTorneoSuizo(color) {
+      if (!state.torneo) return;
+      state.torneo.colorNo1Ronda1 = color;
+      
+      try {
+        state.torneo.estado = 'en_progreso';
+        state.torneo.rondaActual = 0; 
+        
+        emparejarRonda(1);
+        
+        playSound('success');
+        guardarEstadoLocalStorage();
+        renderizarVistas();
+        
+        irAPestana('tab-pairings');
+        showToast(`¡Torneo iniciado! El sembrado No. 1 juega de ${color === 'W' ? 'Blancas' : 'Negras'}.`, "success");
       } catch (e) {
         playSound('error');
         showToast(e.message, "error");
@@ -7446,9 +7493,27 @@
     }
 
     // --- MÉTODOS CONTROLADORES DE MODAL SORTEO COLOR ---
-    function abrirModalSorteoColor() {
+    function abrirModalSorteoColor(p1, p2) {
       const modal = document.getElementById('sorteo-color-modal');
-      if (modal) {
+      const desc = document.getElementById('sorteo-color-desc');
+      const p1Elem = document.getElementById('sorteo-player-1');
+      const p2Elem = document.getElementById('sorteo-player-2');
+      
+      if (modal && desc && p1Elem && p2Elem && p1 && p2) {
+        const isEquipos = state.torneo.modalidad === 'suizo_equipos';
+        
+        const name1 = isEquipos ? p1.nombre : `${p1.nombre} ${p1.apellido}`;
+        const name2 = isEquipos ? p2.nombre : `${p2.nombre} ${p2.apellido}`;
+        
+        p1Elem.textContent = `${name1} (${p1.elo})`;
+        p2Elem.textContent = `${name2} (${p2.elo})`;
+        
+        if (isEquipos) {
+          desc.innerHTML = `Selecciona color para el equipo <strong>${name1}</strong> (Mayor ELO), que jugará en la mesa 1 contra <strong>${name2}</strong>.`;
+        } else {
+          desc.innerHTML = `Selecciona color para el jugador <strong>${name1}</strong> (Mayor ELO), que jugará en el tablero 1 contra <strong>${name2}</strong>.`;
+        }
+        
         modal.classList.add('open');
         playSound('select');
       }
